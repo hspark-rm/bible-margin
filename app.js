@@ -5,7 +5,7 @@ const DATA = "data/out";
 const TRANS = { rnksv: "새번역", krv: "개역개정", ctb: "공동번역", esv: "ESV" };
 const state = {
   trans: "rnksv", book: "Gen", ch: 1,
-  fontSize: 20, obCount: 4, showTsk: true, maxRefs: 10,
+  fontSize: 20, obCount: 4, showTsk: true, maxRefs: 10, useNb: false,
 };
 let BOOKS = [], BOOK = {}, ORDER = [];
 const cache = new Map();
@@ -191,7 +191,12 @@ function marginItem(n, v, xref, ctbDiff, memos = [], inks = []) {
   for (const m of memos) {
     const rng = m.v2 !== m.v ? `<b>${m.v}–${m.v2}</b>` : "";
     const tags = (m.tags || []).map((t) => `<span class="tag">#${esc(t)}</span>`).join(" ");
-    parts.push(`<span class="memo" data-id="${m.id}">${rng}${esc(m.text).replace(/\n/g, "<br>")}${tags ? " " + tags : ""}</span>`);
+    const src = m.src ? `<span class="mcite">📖 ${esc(Lib.cite(m.src))}</span>` : "";
+    const quote = m.quote ? `<span class="mquote">${esc(m.quote.split("\n")[0])}</span>` : "";
+    const text = m.text ? esc(m.text).replace(/\n/g, "<br>") : "";
+    // 공책을 쓰면 메모 왼쪽 띠를 공책 색으로 칠한다.
+    const col = state.useNb && m.nb ? Lib.nbColor(m.nb) : "";
+    parts.push(`<span class="memo" data-id="${m.id}"${col ? ` style="border-left-color:${col}"` : ""}>${src}${quote}${rng}${text}${tags ? " " + tags : ""}</span>`);
   }
   for (const x of v.n || []) parts.push(`<span class="note"><b>${x.m}</b>${esc(x.t)}</span>`);
   const x = !ctbDiff && xref && xref[`${state.ch}.${n}`];
@@ -351,6 +356,7 @@ function applyPrefs() {
   $("#obCount").value = state.obCount;
   $("#showTsk").checked = state.showTsk;
   $("#maxRefs").value = state.maxRefs;
+  $("#useNb").checked = state.useNb;
 }
 
 async function init() {
@@ -363,7 +369,7 @@ async function init() {
   BOOKS = await getJSON("books.json");
   if (!BOOKS) {
     const err = (DBX.error() ? `<p class="warn">오류: ${esc(DBX.error())}</p>` : "")
-      + `<p class="merged">앱 버전 v7 · 이 기기 연결 권한: ${esc(DBX.scope())}</p>`;
+      + `<p class="merged">앱 버전 v8 · 이 기기 연결 권한: ${esc(DBX.scope())}</p>`;
     $("#text").innerHTML = DBX.configured() && DBX.loggedIn()
       ? `<h2>Dropbox에 연결됨</h2><p>성경 본문 파일을 Dropbox 앱 폴더에서 찾지 못했습니다(texts/books.json). 맥에서 본문을 복사한 뒤 새로고침하세요.</p>${err}<p><button class="pill ghost" onclick="DBX.logout(); localStorage.removeItem('bm.dbxReady'); DBX.login()">연결 끊고 다시 연결</button></p>`
       : DBX.configured()
@@ -381,6 +387,7 @@ async function init() {
   applyPrefs();
   Annot.init();
   Ink.init();
+  Lib.init();
 
   $("#prev").onclick = () => step(-1);
   $("#next").onclick = () => step(1);
@@ -399,6 +406,7 @@ async function init() {
     catch (err) { b.textContent = "실패 — 다시 시도"; b.disabled = false; }
   };
   $("#dbxOut").onclick = () => { if (confirm("이 기기의 Dropbox 연결을 끊을까요? (주석과 받은 본문은 기기에 남습니다)")) { DBX.logout(); Sync.status(); } };
+  $("#useNb").onchange = (e) => { state.useNb = e.target.checked; savePrefs(); render(null, true); };
   $("#maxRefs").onchange = (e) => { state.maxRefs = Math.max(1, +e.target.value || 10); render(); };
   $("#showTsk").onchange = (e) => { state.showTsk = e.target.checked; render(); };
   document.querySelectorAll("[data-close]").forEach((b) => (b.onclick = closeSheets));

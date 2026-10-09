@@ -24,6 +24,7 @@
     <option value="ctb">공동번역</option>
     <option value="esv">ESV</option>
   </select>
+  <button id="libBtn" class="icon" aria-label="서재" title="서재 · 공책">📚</button>
   <button id="syncBtn" class="icon sync" aria-label="동기화">☁</button>
   <button id="penBtn" class="icon" aria-label="펜 모드" title="펜 모드 (S Pen이 닿으면 자동으로 켜짐)">✍</button>
   <button id="settingsBtn" class="icon" aria-label="설정">⚙</button>
@@ -73,9 +74,20 @@
 <div id="memoSheet" class="sheet" hidden>
   <div class="sheet-head"><span id="memoTitle">메모</span><span class="spacer"></span><button id="memoDel" class="pill ghost">삭제</button><button id="memoSave" class="pill">저장</button><button class="icon" data-close>✕</button></div>
   <div class="memo-body">
-    <textarea id="memoText" rows="6" placeholder="메모 (⌘+Enter 저장)"></textarea>
-    <input id="memoTags" placeholder="태그 (쉼표로 구분: 은혜, 설교준비)">
+    <div id="srcBox" class="src-box"></div>
+    <div id="srcExtra" class="src-extra" hidden>
+      <input id="memoPage" placeholder="쪽수 (예: 45, 45–47, 3장)">
+      <textarea id="memoQuote" rows="3" placeholder="인용문 — 책에서 옮긴 문장"></textarea>
+    </div>
+    <textarea id="memoText" rows="5" placeholder="내 생각 · 묵상 (⌘+Enter 저장)"></textarea>
+    <div id="nbRow" class="row" hidden><label>공책 <select id="memoNb"></select></label></div>
+    <input id="memoTags" placeholder="태그 (쉼표로 구분: 은혜, 칭의)">
   </div>
+</div>
+
+<div id="libSheet" class="sheet lib" hidden>
+  <div class="sheet-head"><span>서재</span><span id="libTabs" class="tabs"></span><span class="spacer"></span><button class="icon" data-close>✕</button></div>
+  <div id="libBody" class="lib-body"></div>
 </div>
 
 <div id="settings" class="sheet" hidden>
@@ -85,6 +97,7 @@
     <label>여백 관주 수 (절마다, 나머지는 +n) <input id="maxRefs" type="number" min="1" max="60"></label>
     <label>OpenBible 관주 수 (절마다) <input id="obCount" type="number" min="0" max="20"></label>
     <label><input id="showTsk" type="checkbox"> TSK 관주 표시</label>
+    <label><input id="useNb" type="checkbox"> 공책 사용 (메모를 공책별로 나누기)</label>
     <div class="row"><button id="exportBtn" class="pill">주석 내보내기 (JSON)</button>
       <label class="pill ghost">주석 가져오기<input id="importInput" type="file" accept="application/json,.json" hidden></label></div>
     <div class="row"><button id="dlAll" class="pill ghost">오프라인용 전체 받기</button><button id="dbxOut" class="pill ghost">Dropbox 연결 끊기</button></div>
@@ -98,6 +111,7 @@
 <script src="sync.js"></script>
 <script src="annotate.js"></script>
 <script src="ink.js"></script>
+<script src="library.js"></script>
 <script src="app.js"></script>
 </body>
 </html>

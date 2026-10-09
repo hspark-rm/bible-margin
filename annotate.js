@@ -101,6 +101,7 @@ const Annot = (() => {
     $("#memoTitle").textContent = `${b.abbr} ${m.ch}:${m.v}${m.v2 !== m.v ? "–" + m.v2 : ""} 메모`;
     $("#memoText").value = m.text || "";
     $("#memoTags").value = (m.tags || []).join(", ");
+    Lib.setupMemo(m);
     $("#memoDel").hidden = !m.id;
     $("#memoSheet").hidden = false;
     setTimeout(() => $("#memoText").focus(), 50);
@@ -109,10 +110,13 @@ const Annot = (() => {
     if (!editing) return;
     const text = $("#memoText").value.trim();
     const tags = $("#memoTags").value.split(/[,#\s]+/).map((t) => t.trim()).filter(Boolean);
+    const { src, quote, nb } = Lib.readMemo();
+    const fields = { text, tags, src, quote, ...(nb !== undefined ? { nb } : {}) };
+    // 인용문이나 내 생각 중 하나라도 있으면 저장한다.
     if (editing.id) {
-      if (text) Store.update(editing.id, { text, tags }); else Store.remove(editing.id);
-    } else if (text) {
-      Store.add({ type: "memo", book: editing.book, ch: editing.ch, v: editing.v, v2: editing.v2, text, tags });
+      if (text || quote) Store.update(editing.id, fields); else Store.remove(editing.id);
+    } else if (text || quote) {
+      Store.add({ type: "memo", book: editing.book, ch: editing.ch, v: editing.v, v2: editing.v2, ...fields });
     }
     editing = null; closeSheets(); rerender();
   }
