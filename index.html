@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>관주 여백 성경</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;600&family=Noto+Sans+KR:wght@400;500&display=swap">
+<link rel="stylesheet" href="style.css">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#fbf8f1">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+</head>
+<body>
+<header class="bar">
+  <button id="prev" class="icon" aria-label="이전 장">‹</button>
+  <button id="loc" class="loc">창세기 1장</button>
+  <button id="next" class="icon" aria-label="다음 장">›</button>
+  <span class="spacer"></span>
+  <select id="trans" aria-label="번역">
+    <option value="rnksv">새번역</option>
+    <option value="krv">개역개정</option>
+    <option value="ctb">공동번역</option>
+    <option value="esv">ESV</option>
+  </select>
+  <button id="syncBtn" class="icon sync" aria-label="동기화">☁</button>
+  <button id="penBtn" class="icon" aria-label="펜 모드" title="펜 모드 (S Pen이 닿으면 자동으로 켜짐)">✍</button>
+  <button id="settingsBtn" class="icon" aria-label="설정">⚙</button>
+</header>
+<div id="penbar" class="penbar" hidden>
+  <button data-color="k" class="sw ink-k" aria-label="검정"></button>
+  <button data-color="r" class="sw ink-r" aria-label="빨강"></button>
+  <button data-color="b" class="sw ink-b" aria-label="파랑"></button>
+  <button data-color="g" class="sw ink-g" aria-label="초록"></button>
+  <span class="tsep"></span>
+  <button data-width="0.6" class="wd" aria-label="가늘게"><i style="height:2px"></i></button>
+  <button data-width="1" class="wd" aria-label="보통"><i style="height:3px"></i></button>
+  <button data-width="1.8" class="wd" aria-label="굵게"><i style="height:5px"></i></button>
+  <span class="tsep"></span>
+  <button data-eraser class="tb" aria-label="지우개">⌫ 지우개</button>
+  <span class="hint">펜으로 여백을 누르면 그 절에 필기 상자가 생깁니다 · S Pen 버튼을 누른 채 그으면 지워집니다</span>
+</div>
+
+<main id="page">
+  <article id="text" class="text"></article>
+  <aside id="margin" class="margin" aria-label="관주"></aside>
+</main>
+
+<div id="picker" class="sheet" hidden>
+  <div class="sheet-head"><span id="pickerTitle">책 선택</span><button class="icon" data-close>✕</button></div>
+  <div id="pickerBody" class="picker-body"></div>
+</div>
+
+<div id="peek" class="sheet peek" hidden>
+  <div class="sheet-head"><span id="peekTitle"></span><span class="spacer"></span><button id="peekGo" class="pill">이동</button><button class="icon" data-close>✕</button></div>
+  <div id="peekBody" class="peek-body"></div>
+</div>
+
+<div id="tool" class="tool" hidden>
+  <button data-act="hl" data-val="1" class="sw c1" aria-label="노랑"></button>
+  <button data-act="hl" data-val="2" class="sw c2" aria-label="초록"></button>
+  <button data-act="hl" data-val="3" class="sw c3" aria-label="파랑"></button>
+  <button data-act="hl" data-val="4" class="sw c4" aria-label="분홍"></button>
+  <button data-act="hl" data-val="5" class="sw c5" aria-label="주황"></button>
+  <span class="tsep"></span>
+  <button data-act="ul" data-val="solid" class="tb" aria-label="밑줄"><u>가</u></button>
+  <button data-act="ul" data-val="wavy" class="tb" aria-label="물결 밑줄"><u class="wv">가</u></button>
+  <button data-act="memo" class="tb" aria-label="메모">✎</button>
+  <button data-act="del" class="tb del" aria-label="지우기">🗑</button>
+</div>
+
+<div id="memoSheet" class="sheet" hidden>
+  <div class="sheet-head"><span id="memoTitle">메모</span><span class="spacer"></span><button id="memoDel" class="pill ghost">삭제</button><button id="memoSave" class="pill">저장</button><button class="icon" data-close>✕</button></div>
+  <div class="memo-body">
+    <textarea id="memoText" rows="6" placeholder="메모 (⌘+Enter 저장)"></textarea>
+    <input id="memoTags" placeholder="태그 (쉼표로 구분: 은혜, 설교준비)">
+  </div>
+</div>
+
+<div id="settings" class="sheet" hidden>
+  <div class="sheet-head"><span>설정</span><button class="icon" data-close>✕</button></div>
+  <div class="settings-body">
+    <label>글자 크기 <input id="fontSize" type="range" min="16" max="30" step="1"></label>
+    <label>여백 관주 수 (절마다, 나머지는 +n) <input id="maxRefs" type="number" min="1" max="60"></label>
+    <label>OpenBible 관주 수 (절마다) <input id="obCount" type="number" min="0" max="20"></label>
+    <label><input id="showTsk" type="checkbox"> TSK 관주 표시</label>
+    <div class="row"><button id="exportBtn" class="pill">주석 내보내기 (JSON)</button>
+      <label class="pill ghost">주석 가져오기<input id="importInput" type="file" accept="application/json,.json" hidden></label></div>
+    <div class="row"><button id="dlAll" class="pill ghost">오프라인용 전체 받기</button><button id="dbxOut" class="pill ghost">Dropbox 연결 끊기</button></div>
+    <p class="credit">관주: Treasury of Scripture Knowledge (CrossReferences.org, CC BY 4.0), OpenBible.info 교차참조 (CC BY).</p>
+  </div>
+</div>
+
+<script src="config.js"></script>
+<script src="dropbox.js"></script>
+<script src="store.js"></script>
+<script src="sync.js"></script>
+<script src="annotate.js"></script>
+<script src="ink.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
