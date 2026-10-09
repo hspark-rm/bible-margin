@@ -33,12 +33,12 @@ const DBX = (() => {
     if (!code) return false;
     const verifier = sessionStorage.getItem("bm.pkce");
     history.replaceState(null, "", location.pathname);
-    if (!verifier) return false;
+    if (!verifier) { lastError = "로그인 확인값이 없습니다(다른 탭에서 돌아왔거나 세션이 지워짐). 다시 연결해 주세요."; return false; }
     const r = await fetch("https://api.dropboxapi.com/oauth2/token", {
       method: "POST",
       body: new URLSearchParams({ code, grant_type: "authorization_code", client_id: CFG.dropboxAppKey, code_verifier: verifier, redirect_uri: redirect() }),
     });
-    if (!r.ok) { alert("Dropbox 로그인 실패: " + (await r.text())); return false; }
+    if (!r.ok) { lastError = "로그인(토큰 교환) 실패: " + (await r.text()); alert(lastError); return false; }
     const j = await r.json();
     tok = { access: j.access_token, refresh: j.refresh_token, exp: Date.now() + (j.expires_in - 60) * 1000 };
     save();
@@ -107,13 +107,15 @@ const DBX = (() => {
       const has = await download("/README.txt");
       if (!has) await upload("/README.txt", "관주 여백 성경 앱 폴더\n\ntexts/        성경 본문·관주 (맥에서 복사)\nannotations/  주석 (앱이 자동 동기화)\n");
       localStorage.setItem("bm.dbxReady", "1");
-    } catch (e) { console.warn("앱 폴더 준비 실패", e); }
+    } catch (e) { lastError = "앱 폴더 준비 실패: " + (e.message || e); console.warn(lastError); }
   }
+  let lastError = null;
 
   return {
     login, handleRedirect, ensureFolder, download, upload, listFolder,
     loggedIn: () => !!tok,
     logout: () => { tok = null; save(); },
     configured: () => !!CFG.dropboxAppKey,
+    error: () => lastError,
   };
 })();
