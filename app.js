@@ -357,6 +357,7 @@ async function init() {
   loadPrefs();
   if ("serviceWorker" in navigator && location.protocol === "https:") navigator.serviceWorker.register("sw.js").catch(() => {});
   await DBX.handleRedirect();
+  await DBX.ensureFolder();
   await Store.init();  // 동기화가 기기 저장소를 덮어쓰지 않도록 먼저 읽는다
   Sync.init();
   BOOKS = await getJSON("books.json");

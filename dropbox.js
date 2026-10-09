@@ -100,8 +100,18 @@ const DBX = (() => {
     } catch (e) { if (e.status === 409) return []; throw e; }
   }
 
+  // Dropbox는 앱이 처음 파일을 쓸 때 앱 폴더를 만든다. 연결 직후 안내 파일을 하나 써서 폴더를 만든다.
+  async function ensureFolder() {
+    if (!tok || localStorage.getItem("bm.dbxReady")) return;
+    try {
+      const has = await download("/README.txt");
+      if (!has) await upload("/README.txt", "관주 여백 성경 앱 폴더\n\ntexts/        성경 본문·관주 (맥에서 복사)\nannotations/  주석 (앱이 자동 동기화)\n");
+      localStorage.setItem("bm.dbxReady", "1");
+    } catch (e) { console.warn("앱 폴더 준비 실패", e); }
+  }
+
   return {
-    login, handleRedirect, download, upload, listFolder,
+    login, handleRedirect, ensureFolder, download, upload, listFolder,
     loggedIn: () => !!tok,
     logout: () => { tok = null; save(); },
     configured: () => !!CFG.dropboxAppKey,

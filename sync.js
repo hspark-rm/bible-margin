@@ -36,7 +36,7 @@ const Sync = (() => {
     try {
       // 1) 다른 기기가 바꾼 책 내려받기
       const remote = {};
-      for (const e of await DBX.listFolder("/annotations")) if (e[".tag"] === "file") remote[e.name.replace(/\.json$/, "")] = e.rev;
+      for (const e of await DBX.listFolder("/annotations")) if (e[".tag"] === "file" && /^[\w]+\.json$/.test(e.name)) remote[e.name.replace(/\.json$/, "")] = e.rev;
       for (const [book, rev] of Object.entries(remote)) {
         if (revs[book] !== rev) changed += await pull(book, rev);
       }
