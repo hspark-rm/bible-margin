@@ -22,6 +22,8 @@ const DBX = (() => {
     const q = new URLSearchParams({
       client_id: CFG.dropboxAppKey, response_type: "code", code_challenge: challenge, code_challenge_method: "S256",
       token_access_type: "offline", redirect_uri: redirect(),
+      // 필요한 권한을 명시한다. 앱 콘솔에서 이 권한이 꺼져 있으면 Dropbox가 승인 화면에서 바로 알려 준다.
+      scope: "files.content.read files.content.write",
     });
     location.href = `https://www.dropbox.com/oauth2/authorize?${q}`;
   }
@@ -40,7 +42,7 @@ const DBX = (() => {
     });
     if (!r.ok) { lastError = "로그인(토큰 교환) 실패: " + (await r.text()); alert(lastError); return false; }
     const j = await r.json();
-    tok = { access: j.access_token, refresh: j.refresh_token, exp: Date.now() + (j.expires_in - 60) * 1000 };
+    tok = { access: j.access_token, refresh: j.refresh_token, exp: Date.now() + (j.expires_in - 60) * 1000, scope: j.scope || "" };
     save();
     sessionStorage.removeItem("bm.pkce");
     return true;
@@ -117,5 +119,6 @@ const DBX = (() => {
     logout: () => { tok = null; save(); },
     configured: () => !!CFG.dropboxAppKey,
     error: () => lastError,
+    scope: () => (tok && tok.scope) || "(기록 없음)",
   };
 })();
