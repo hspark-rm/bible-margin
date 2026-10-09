@@ -1,5 +1,5 @@
 // 앱 화면 파일을 캐시해 오프라인에서도 열리게 한다. 성경 본문·주석은 앱이 따로 캐시한다(Dropbox 요청은 건드리지 않음).
-const VER = "bm-shell-v4";
+const VER = "bm-shell-v5";
 const SHELL = ["./", "index.html", "style.css", "config.js", "store.js", "annotate.js", "ink.js", "dropbox.js", "sync.js", "app.js", "manifest.webmanifest", "icons/icon-192.png", "icons/icon-512.png"];
 
 self.addEventListener("install", (e) => {

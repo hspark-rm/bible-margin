@@ -364,7 +364,7 @@ async function init() {
   if (!BOOKS) {
     const err = DBX.error() ? `<p class="warn">오류: ${esc(DBX.error())}</p>` : "";
     $("#text").innerHTML = DBX.configured() && DBX.loggedIn()
-      ? `<h2>Dropbox에 연결됨</h2><p>성경 본문 파일을 Dropbox 앱 폴더에서 찾지 못했습니다(texts/books.json). 맥에서 본문을 복사한 뒤 새로고침하세요.</p>${err}`
+      ? `<h2>Dropbox에 연결됨</h2><p>성경 본문 파일을 Dropbox 앱 폴더에서 찾지 못했습니다(texts/books.json). 맥에서 본문을 복사한 뒤 새로고침하세요.</p>${err}<p><button class="pill ghost" onclick="DBX.logout(); localStorage.removeItem('bm.dbxReady'); DBX.login()">연결 끊고 다시 연결</button></p>`
       : DBX.configured()
       ? `<h2>Dropbox 연결이 필요합니다</h2><p>성경 본문은 Dropbox 앱 폴더에 있습니다. 이 기기에서 한 번 연결하면 이후에는 기기에 저장되어 오프라인에서도 열립니다.</p>${err}<p><button class="pill" onclick="DBX.login()">Dropbox 연결</button></p>`
       : "<p>데이터를 불러오지 못했습니다. data/out 폴더 또는 config.js를 확인하세요.</p>";
