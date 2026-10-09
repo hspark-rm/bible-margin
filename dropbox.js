@@ -6,6 +6,9 @@
 const DBX = (() => {
   const CFG = window.BM_CONFIG || {};
   const KEY = "bm.dbx";
+  // 앱이 'Full Dropbox' 권한이면 모든 경로를 이 폴더 아래로 모은다(App folder 앱이면 "" 로 둔다).
+  const ROOT = CFG.dropboxRoot || "";
+  const full = (p) => ROOT + p;
   const redirect = () => CFG.redirectUri || location.origin + location.pathname;
   let tok = null;
   try { tok = JSON.parse(localStorage.getItem(KEY) || "null"); } catch (e) {}
@@ -74,7 +77,7 @@ const DBX = (() => {
   // 파일 내려받기: { text, rev } 또는 없으면 null
   async function download(path) {
     const r = await fetch("https://content.dropboxapi.com/2/files/download", {
-      method: "POST", headers: { Authorization: `Bearer ${await access()}`, "Dropbox-API-Arg": arg({ path }) },
+      method: "POST", headers: { Authorization: `Bearer ${await access()}`, "Dropbox-API-Arg": arg({ path: full(path) }) },
     });
     if (r.status === 409) return null;
     if (!r.ok) throw new Error(await r.text());
@@ -86,7 +89,7 @@ const DBX = (() => {
     const mode = rev ? { ".tag": "update", update: rev } : { ".tag": "overwrite" };
     const r = await fetch("https://content.dropboxapi.com/2/files/upload", {
       method: "POST",
-      headers: { Authorization: `Bearer ${await access()}`, "Dropbox-API-Arg": arg({ path, mode, mute: true }), "Content-Type": "application/octet-stream" },
+      headers: { Authorization: `Bearer ${await access()}`, "Dropbox-API-Arg": arg({ path: full(path), mode, mute: true }), "Content-Type": "application/octet-stream" },
       body: new TextEncoder().encode(text),
     });
     if (r.status === 409) { const e = new Error("conflict"); e.conflict = true; throw e; }
@@ -95,7 +98,7 @@ const DBX = (() => {
   }
   async function listFolder(path) {
     try {
-      let j = await rpc("files/list_folder", { path });
+      let j = await rpc("files/list_folder", { path: full(path) });
       const out = [...j.entries];
       while (j.has_more) { j = await rpc("files/list_folder/continue", { cursor: j.cursor }); out.push(...j.entries); }
       return out;
