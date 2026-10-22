@@ -2,6 +2,7 @@
 // 관주 여백 성경 — P1: 읽기 화면 + 여백 관주 + 다른 번역 열람
 
 const DATA = "data/out";
+const APP_VERSION = "v9";
 const TRANS = { rnksv: "새번역", krv: "개역개정", ctb: "공동번역", esv: "ESV" };
 const state = {
   trans: "rnksv", book: "Gen", ch: 1,
@@ -369,7 +370,7 @@ async function init() {
   BOOKS = await getJSON("books.json");
   if (!BOOKS) {
     const err = (DBX.error() ? `<p class="warn">오류: ${esc(DBX.error())}</p>` : "")
-      + `<p class="merged">앱 버전 v8 · 이 기기 연결 권한: ${esc(DBX.scope())}</p>`;
+      + `<p class="merged">앱 버전 ${APP_VERSION} · 이 기기 연결 권한: ${esc(DBX.scope())}</p>`;
     $("#text").innerHTML = DBX.configured() && DBX.loggedIn()
       ? `<h2>Dropbox에 연결됨</h2><p>성경 본문 파일을 Dropbox 앱 폴더에서 찾지 못했습니다(texts/books.json). 맥에서 본문을 복사한 뒤 새로고침하세요.</p>${err}<p><button class="pill ghost" onclick="DBX.logout(); localStorage.removeItem('bm.dbxReady'); DBX.login()">연결 끊고 다시 연결</button></p>`
       : DBX.configured()
@@ -385,6 +386,17 @@ async function init() {
   ORDER = BOOKS.map((b) => b.id);
   if (!BOOK[state.book]) state.book = "Gen";
   applyPrefs();
+  // 기기 저장 실패 표시(성공하면 사라짐)
+  const showSave = () => {
+    const f = Store.saveFailures();
+    const el = $("#saveWarn");
+    el.hidden = !f.length;
+    el.title = f[0] || "";
+    el.textContent = f.length ? `⚠ 저장 실패 ${f.length} · 다시 시도 중` : "";
+  };
+  Store.onSaveState(showSave);
+  showSave();
+  $("#verLine").textContent = `앱 버전 ${APP_VERSION}`;
   Annot.init();
   Ink.init();
   Lib.init();

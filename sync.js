@@ -55,6 +55,7 @@ const Sync = (() => {
         }
       }
       put(K_DIRTY, [...dirty]); put(K_REVS, revs);
+      await dailyBackup();
       lastOk = new Date();
       if (changed && typeof rerender === "function") rerender();
     } catch (e) {
@@ -63,6 +64,16 @@ const Sync = (() => {
     } finally {
       busy = false; status();
     }
+  }
+
+  // 하루 한 번(기기 무관, 같은 날짜 파일은 덮어씀) 주석 전체를 /backup/에 올리고 최근 30개만 남긴다.
+  async function dailyBackup() {
+    const today = new Date().toISOString().slice(0, 10);
+    if (localStorage.getItem("bm.lastBackup") === today) return;
+    await DBX.upload(`/backup/annotations-${today}.json`, Store.exportJSON());
+    const files = (await DBX.listFolder("/backup")).filter((e) => e[".tag"] === "file" && /^annotations-\d{4}-\d{2}-\d{2}\.json$/.test(e.name)).map((e) => e.name).sort();
+    for (const name of files.slice(0, Math.max(0, files.length - 30))) await DBX.remove(`/backup/${name}`);
+    try { localStorage.setItem("bm.lastBackup", today); } catch (e) {}
   }
 
   function status() {

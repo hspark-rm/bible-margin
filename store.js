@@ -34,9 +34,29 @@ const Store = (() => {
       db = null;
     }
   }
+  // 기기 저장 실패는 화면에 알리고 10초마다 다시 쓴다. 성공해야 실패 목록에서 뺀다.
+  const failed = new Map(); // id → 오류
+  let retryTimer = null;
+  const listeners = [];
+  const notify = () => listeners.forEach((fn) => fn());
   function persist(a) {
-    if (!db) return;
-    try { tx("readwrite").put(a); } catch (e) { console.warn(e); }
+    if (!db) { failed.set(a.id, "기기 저장소(IndexedDB)를 쓸 수 없음 — 비공개 창인지 확인"); notify(); return; }
+    const fail = (e) => {
+      failed.set(a.id, String((e && e.message) || e || "알 수 없는 오류"));
+      notify();
+      clearTimeout(retryTimer);
+      retryTimer = setTimeout(retry, 10000);
+    };
+    try {
+      const t = db.transaction(OS, "readwrite");
+      t.objectStore(OS).put(a);
+      t.oncomplete = () => { if (failed.delete(a.id)) notify(); };
+      t.onerror = () => fail(t.error);
+      t.onabort = () => fail(t.error || "저장이 취소됨");
+    } catch (e) { fail(e); }
+  }
+  function retry() {
+    for (const id of [...failed.keys()]) { const a = mem.get(id); if (a) persist(a); else failed.delete(id); }
   }
   const uid = () => (crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).slice(2));
 
@@ -84,5 +104,8 @@ const Store = (() => {
     return n;
   }
 
-  return { init, add, update, remove, get, live, forChapter, exportJSON, importJSON, items, merge };
+  const onSaveState = (fn) => listeners.push(fn);
+  const saveFailures = () => [...failed.values()];
+
+  return { init, add, update, remove, get, live, forChapter, exportJSON, importJSON, items, merge, onSaveState, saveFailures };
 })();

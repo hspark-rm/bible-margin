@@ -18,6 +18,7 @@
   <button id="loc" class="loc">창세기 1장</button>
   <button id="next" class="icon" aria-label="다음 장">›</button>
   <span class="spacer"></span>
+  <span id="saveWarn" class="save-warn" hidden></span>
   <select id="trans" aria-label="번역">
     <option value="rnksv">새번역</option>
     <option value="krv">개역개정</option>
@@ -101,6 +102,7 @@
     <div class="row"><button id="exportBtn" class="pill">주석 내보내기 (JSON)</button>
       <label class="pill ghost">주석 가져오기<input id="importInput" type="file" accept="application/json,.json" hidden></label></div>
     <div class="row"><button id="dlAll" class="pill ghost">오프라인용 전체 받기</button><button id="dbxOut" class="pill ghost">Dropbox 연결 끊기</button></div>
+    <p id="verLine" class="credit"></p>
     <p class="credit">관주: Treasury of Scripture Knowledge (CrossReferences.org, CC BY 4.0), OpenBible.info 교차참조 (CC BY).</p>
   </div>
 </div>

@@ -116,7 +116,11 @@ const DBX = (() => {
   }
   let lastError = null;
 
+  // 백업 회전용: 경로 하나를 지운다(Dropbox 삭제 파일 목록에서 되살릴 수 있다).
+  const remove = (path) => rpc("files/delete_v2", { path: full(path) });
+
   return {
+    remove,
     login, handleRedirect, ensureFolder, download, upload, listFolder,
     loggedIn: () => !!tok,
     logout: () => { tok = null; save(); },
